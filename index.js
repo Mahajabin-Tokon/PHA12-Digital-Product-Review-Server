@@ -28,6 +28,7 @@ async function run() {
     // Databases
     const db = client.db("productHuntDB");
     const userCollection = db.collection("users");
+    const productCollection = db.collection("products");
 
     // User collection related routes
     // Make a new user
@@ -41,6 +42,14 @@ async function run() {
       const result = await userCollection.insertOne(user);
       res.send(result);
     });
+
+    // Product collection related routes
+    // Add a new product
+    app.post("/addProduct", async (req, res) => {
+        const cartItem = req.body;
+        const result = await productCollection.insertOne(cartItem);
+        res.send(result);
+      });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
