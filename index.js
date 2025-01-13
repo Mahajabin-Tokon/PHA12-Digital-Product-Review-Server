@@ -44,12 +44,18 @@ async function run() {
     });
 
     // Product collection related routes
+    // Get all products
+    app.get("/products", async (req, res) => {
+      const result = await productCollection.find().toArray();
+      res.send(result);
+    });
+
     // Add a new product
     app.post("/addProduct", async (req, res) => {
-        const cartItem = req.body;
-        const result = await productCollection.insertOne(cartItem);
-        res.send(result);
-      });
+      const cartItem = req.body;
+      const result = await productCollection.insertOne(cartItem);
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
