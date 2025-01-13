@@ -3,12 +3,26 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const app = express();
-// const jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const port = process.env.PORT || 5001;
 
 // middleware
 app.use(cors());
 app.use(express.json());
+// Verify Token middleware
+const verifyToken = (req, res, next) => {
+    const auth = req.headers.authorization;
+    // console.log("Inside", auth);
+    if (!auth) return res.status(401).send({ message: "forbidden access" });
+    const token = auth.split(" ")[1];
+    jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+      if (err) {
+        return res.status(401).send({ message: "forbidden access" });
+      }
+      req.decoded = decoded;
+      next();
+    });
+  };
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.85wcl.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -30,6 +44,15 @@ async function run() {
     const userCollection = db.collection("users");
     const productCollection = db.collection("products");
 
+    // JWT routes
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.SECRET_KEY, {
+        expiresIn: "365d",
+      });
+      res.send({ token });
+    });
+
     // User collection related routes
     // Make a new user
     app.post("/users", async (req, res) => {
@@ -45,7 +68,7 @@ async function run() {
 
     // Product collection related routes
     // Get all products
-    app.get("/products", async (req, res) => {
+    app.get("/products", verifyToken, async (req, res) => {
       const result = await productCollection.find().toArray();
       res.send(result);
     });
