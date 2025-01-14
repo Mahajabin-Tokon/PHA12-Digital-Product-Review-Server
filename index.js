@@ -117,6 +117,21 @@ async function run() {
       //   };
     });
 
+    // Update product featured status
+    app.patch("/products/feature/:id", async (req, res) => {
+      const id = req.params.id;
+      // console.log(id)
+      const filter = { _id: new ObjectId(id) };
+      // const options = { upsert: true };
+      const product = {
+        $set: {
+          isFeatured: true
+        },
+      };
+      const result = await productCollection.updateOne(filter, product);
+      res.send(result);
+    });
+
     // Review collection related routes
     // Get all reviews by product ID
     app.get("/reviews", async (req, res) => {
