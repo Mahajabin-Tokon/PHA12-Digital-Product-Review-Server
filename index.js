@@ -90,14 +90,23 @@ async function run() {
     });
 
     // Update product upvote
-    app.patch("/products/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const update = {
-        $inc: { productUpvotes: 1 },
-      };
-      const result = await productCollection.updateOne(filter, update);
+    app.patch("/products", async (req, res) => {
+      const productData = req.body;
+      const email = req.query.email;
+      const query = { _id: new ObjectId(productData._id) };
+      const productToUpdate = await productCollection.findOne(query);
+      if (productToUpdate?.productUpvotes?.includes(email)) {
+        return res
+          .status(400)
+          .json({ message: "User has already upvoted this product." });
+      }
+      const update = { $push: { productUpvotes: email } };
+
+      const result = await productCollection.updateOne(query, update);
       res.send(result);
+      //   const update = {
+      //     $inc: { productUpvotes: 1 },
+      //   };
     });
 
     // Review collection related routes
