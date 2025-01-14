@@ -132,6 +132,36 @@ async function run() {
       res.send(result);
     });
 
+    // Accept product status
+    app.patch("/products/accept/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      // console.log(id)
+      const filter = { _id: new ObjectId(id) };
+      // const options = { upsert: true };
+      const product = {
+        $set: {
+          isAccepted: "accepted"
+        },
+      };
+      const result = await productCollection.updateOne(filter, product);
+      res.send(result);
+    });
+
+    // Reject product status
+    app.patch("/products/reject/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      // console.log(id)
+      const filter = { _id: new ObjectId(id) };
+      // const options = { upsert: true };
+      const product = {
+        $set: {
+          isAccepted: "rejected"
+        },
+      };
+      const result = await productCollection.updateOne(filter, product);
+      res.send(result);
+    });
+
     // Review collection related routes
     // Get all reviews by product ID
     app.get("/reviews", async (req, res) => {
