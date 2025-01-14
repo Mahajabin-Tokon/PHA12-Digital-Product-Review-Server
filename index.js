@@ -43,6 +43,7 @@ async function run() {
     const db = client.db("productHuntDB");
     const userCollection = db.collection("users");
     const productCollection = db.collection("products");
+    const reviewCollection = db.collection("reviews");
 
     // JWT routes
     app.post("/jwt", async (req, res) => {
@@ -75,16 +76,32 @@ async function run() {
 
     // Get product by ID
     app.get("/productDetails/:id", async (req, res) => {
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await productCollection.findOne(query);
-        res.send(result);
-      });
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productCollection.findOne(query);
+      res.send(result);
+    });
 
     // Add a new product
     app.post("/addProduct", async (req, res) => {
       const cartItem = req.body;
       const result = await productCollection.insertOne(cartItem);
+      res.send(result);
+    });
+
+    // Review collection related routes
+    // Get all reviews by product ID
+    app.get("/reviews", async (req, res) => {
+      const id = req.query.id;
+      const query = { productId: id };
+      const result = await reviewCollection.find(query).toArray();
+      res.send(result);
+    });
+
+    // Add a new review
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollection.insertOne(review);
       res.send(result);
     });
 
