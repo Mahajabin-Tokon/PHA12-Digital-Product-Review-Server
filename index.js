@@ -72,7 +72,7 @@ async function run() {
       const email = req.params.email;
       const query = { email: email };
       const result = await userCollection.findOne(query);
-      res.send({role: result?.role});
+      res.send({ role: result?.role });
     });
 
     // Product collection related routes
@@ -125,7 +125,7 @@ async function run() {
       // const options = { upsert: true };
       const product = {
         $set: {
-          isFeatured: true
+          isFeatured: true,
         },
       };
       const result = await productCollection.updateOne(filter, product);
@@ -140,7 +140,7 @@ async function run() {
       // const options = { upsert: true };
       const product = {
         $set: {
-          isAccepted: "accepted"
+          isAccepted: "accepted",
         },
       };
       const result = await productCollection.updateOne(filter, product);
@@ -155,14 +155,14 @@ async function run() {
       // const options = { upsert: true };
       const product = {
         $set: {
-          isAccepted: "rejected"
+          isAccepted: "rejected",
         },
       };
       const result = await productCollection.updateOne(filter, product);
       res.send(result);
     });
 
-    // Report product 
+    // Report product
     app.patch("/products/report/:id", async (req, res) => {
       const id = req.params.id;
       // console.log(id)
@@ -170,19 +170,33 @@ async function run() {
       const options = { upsert: true };
       const product = {
         $set: {
-          isReported: true
+          isReported: true,
         },
       };
       const result = await productCollection.updateOne(filter, product);
       res.send(result);
     });
 
+    // Delete a product
+    app.delete("/products/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      // console.log(id)
+      const query = { _id: new ObjectId(id) };
+      // console.log(query)
+      const result = await productCollection.deleteOne(query);
+      // console.log(result)
+      res.send(result);
+    });
+
     // Review collection related routes
     // Get all reviews by product ID
-    app.get("/reviews", async (req, res) => {
-      const id = req.query.id;
+    app.get("/reviews/:id", async (req, res) => {
+      const id = req.params.id;
+      // console.log(id);
       const query = { productId: id };
+      // console.log(query);
       const result = await reviewCollection.find(query).toArray();
+      // console.log(result);
       res.send(result);
     });
 
