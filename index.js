@@ -45,6 +45,18 @@ async function run() {
     const productCollection = db.collection("products");
     const reviewCollection = db.collection("reviews");
 
+    // Werify Moderator
+    const verifyModerator = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isModerator = user?.role === "moderator";
+      if (!isModerator) {
+        return res.status(403).send({ message: "unauthorized access" });
+      }
+      next();
+    };
+
     // JWT routes
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -126,7 +138,7 @@ async function run() {
     });
 
     // Update product featured status
-    app.patch("/products/feature/:id", async (req, res) => {
+    app.patch("/products/feature/:id", verifyToken, verifyModerator, async (req, res) => {
       const id = req.params.id;
       // console.log(id)
       const filter = { _id: new ObjectId(id) };
@@ -141,7 +153,7 @@ async function run() {
     });
 
     // Accept product status
-    app.patch("/products/accept/:id", verifyToken, async (req, res) => {
+    app.patch("/products/accept/:id", verifyToken, verifyModerator, async (req, res) => {
       const id = req.params.id;
       // console.log(id)
       const filter = { _id: new ObjectId(id) };
@@ -156,7 +168,7 @@ async function run() {
     });
 
     // Reject product status
-    app.patch("/products/reject/:id", verifyToken, async (req, res) => {
+    app.patch("/products/reject/:id", verifyToken, verifyModerator,async (req, res) => {
       const id = req.params.id;
       // console.log(id)
       const filter = { _id: new ObjectId(id) };
