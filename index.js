@@ -89,6 +89,17 @@ async function run() {
       res.send(result);
     });
 
+    // Update product upvote
+    app.patch("/products/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const update = {
+        $inc: { productUpvotes: 1 },
+      };
+      const result = await productCollection.updateOne(filter, update);
+      res.send(result);
+    });
+
     // Review collection related routes
     // Get all reviews by product ID
     app.get("/reviews", async (req, res) => {
