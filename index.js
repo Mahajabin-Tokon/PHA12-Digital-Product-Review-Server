@@ -85,7 +85,7 @@ async function run() {
     // Get products by email
     app.get("/products/:email", async (req, res) => {
       const email = req.params.email;
-      const query = { email: email};
+      const query = { email: email };
       const result = await productCollection.find(query).toArray();
       res.send(result);
     });
@@ -182,6 +182,30 @@ async function run() {
         },
       };
       const result = await productCollection.updateOne(filter, product);
+      res.send(result);
+    });
+
+    // Update product
+    app.patch("/products/update/:id", verifyToken, async (req, res) => {
+      const id = req.params.id;
+      // console.log(id)
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const productData = req.body;
+      const updatedProduct = {
+        $set: {
+          productName: productData.productName,
+          productImage: productData.productImage,
+          productDescription: productData.productDescription,
+          productTags: productData.productTags,
+          productExternalLink: productData.productExternalLink,
+        },
+      };
+      const result = await productCollection.updateOne(
+        filter,
+        updatedProduct,
+        options
+      );
       res.send(result);
     });
 
