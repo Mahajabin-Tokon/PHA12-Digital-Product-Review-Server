@@ -82,6 +82,14 @@ async function run() {
       res.send(result);
     });
 
+    // Get products by email
+    app.get("/products/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email};
+      const result = await productCollection.find(query).toArray();
+      res.send(result);
+    });
+
     // Get product by ID
     app.get("/productDetails/:id", async (req, res) => {
       const id = req.params.id;
