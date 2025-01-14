@@ -67,6 +67,14 @@ async function run() {
       res.send(result);
     });
 
+    // Check user role
+    app.get("/users/role/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      res.send({role: result?.role});
+    });
+
     // Product collection related routes
     // Get all products
     app.get("/products", async (req, res) => {
