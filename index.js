@@ -80,8 +80,10 @@ async function run() {
 
     // User collection related routes
     // Get all users
-    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
-      const result = await userCollection.find().toArray();
+    app.get("/users/:email", verifyToken, verifyAdmin, async (req, res) => {
+      const email = req.params.email;
+      const query = { email: { $ne: email } };
+      const result = await userCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -119,17 +121,22 @@ async function run() {
     });
 
     // Update user role to moderator
-    app.patch("/users/admin/:id", verifyToken, verifyAdmin, async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updatedRole = {
-        $set: {
-          role: "admin",
-        },
-      };
-      const result = await userCollection.updateOne(filter, updatedRole);
-      res.send(result);
-    });
+    app.patch(
+      "/users/admin/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedRole = {
+          $set: {
+            role: "admin",
+          },
+        };
+        const result = await userCollection.updateOne(filter, updatedRole);
+        res.send(result);
+      }
+    );
 
     // Product collection related routes
     // Get all products
