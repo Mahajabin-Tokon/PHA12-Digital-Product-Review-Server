@@ -57,6 +57,18 @@ async function run() {
       next();
     };
 
+    // Verify Admin
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "unauthorized access" });
+      }
+      next();
+    };
+
     // JWT routes
     app.post("/jwt", async (req, res) => {
       const user = req.body;
@@ -67,6 +79,20 @@ async function run() {
     });
 
     // User collection related routes
+    // Get all users
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    // Check user role
+    app.get("/users/role/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      res.send({ role: result?.role });
+    });
+
     // Make a new user
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -79,12 +105,30 @@ async function run() {
       res.send(result);
     });
 
-    // Check user role
-    app.get("/users/role/:email", async (req, res) => {
-      const email = req.params.email;
-      const query = { email: email };
-      const result = await userCollection.findOne(query);
-      res.send({ role: result?.role });
+    // Update user role to moderator
+    app.patch("/users/mod/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedRole = {
+        $set: {
+          role: "moderator",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedRole);
+      res.send(result);
+    });
+
+    // Update user role to moderator
+    app.patch("/users/admin/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedRole = {
+        $set: {
+          role: "admin",
+        },
+      };
+      const result = await userCollection.updateOne(filter, updatedRole);
+      res.send(result);
     });
 
     // Product collection related routes
@@ -138,37 +182,47 @@ async function run() {
     });
 
     // Update product featured status
-    app.patch("/products/feature/:id", verifyToken, verifyModerator, async (req, res) => {
-      const id = req.params.id;
-      // console.log(id)
-      const filter = { _id: new ObjectId(id) };
-      // const options = { upsert: true };
-      const product = {
-        $set: {
-          isFeatured: true,
-        },
-      };
-      const result = await productCollection.updateOne(filter, product);
-      res.send(result);
-    });
+    app.patch(
+      "/products/feature/:id",
+      verifyToken,
+      verifyModerator,
+      async (req, res) => {
+        const id = req.params.id;
+        // console.log(id)
+        const filter = { _id: new ObjectId(id) };
+        // const options = { upsert: true };
+        const product = {
+          $set: {
+            isFeatured: true,
+          },
+        };
+        const result = await productCollection.updateOne(filter, product);
+        res.send(result);
+      }
+    );
 
     // Accept product status
-    app.patch("/products/accept/:id", verifyToken, verifyModerator, async (req, res) => {
-      const id = req.params.id;
-      // console.log(id)
-      const filter = { _id: new ObjectId(id) };
-      // const options = { upsert: true };
-      const product = {
-        $set: {
-          isAccepted: "accepted",
-        },
-      };
-      const result = await productCollection.updateOne(filter, product);
-      res.send(result);
-    });
+    app.patch(
+      "/products/accept/:id",
+      verifyToken,
+      verifyModerator,
+      async (req, res) => {
+        const id = req.params.id;
+        // console.log(id)
+        const filter = { _id: new ObjectId(id) };
+        // const options = { upsert: true };
+        const product = {
+          $set: {
+            isAccepted: "accepted",
+          },
+        };
+        const result = await productCollection.updateOne(filter, product);
+        res.send(result);
+      }
+    );
 
     // Reject product status
-    app.patch("/products/reject/:id", verifyToken, verifyModerator,async (req, res) => {
+    app.patch("/products/reject/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       // console.log(id)
       const filter = { _id: new ObjectId(id) };
