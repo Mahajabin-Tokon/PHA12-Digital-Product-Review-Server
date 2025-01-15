@@ -4,6 +4,7 @@ const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
 const jwt = require("jsonwebtoken");
+const stripe = require("stripe")(process.env.PAYMENT_SECRET_KEY);
 const port = process.env.PORT || 5001;
 
 // middleware
@@ -79,6 +80,23 @@ async function run() {
       res.send({ token });
     });
 
+    // Payment related routes
+    // Payment intent
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+      // Create a PaymentIntent with the order amount and currency
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
+
     // Get stat
     app.get("/stats", verifyToken, verifyAdmin, async (req, res) => {
       const users = await userCollection.estimatedDocumentCount();
@@ -149,7 +167,24 @@ async function run() {
       }
     );
 
-    // Product collection related routes
+    // Update user verified status
+    app.patch(
+      "/users/payment/:email",
+      verifyToken,
+      async (req, res) => {
+        const email = req.params.email;
+        const filter = { email: email };
+        const options = { upsert: true };
+        const updatedUser = {
+          $set: {
+            isVerified: true,
+          },
+        };
+        const result = await userCollection.updateOne(filter, updatedUser, options);
+        res.send(result);
+      }
+    );
+
     // Get all products
     app.get("/products", async (req, res) => {
       const result = await productCollection.find().toArray();
