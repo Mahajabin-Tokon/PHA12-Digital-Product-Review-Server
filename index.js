@@ -78,6 +78,16 @@ async function run() {
       res.send({ token });
     });
 
+    // Get stat
+    app.get("/stats", verifyToken, verifyAdmin, async (req, res) => {
+      const users = await userCollection.estimatedDocumentCount();
+      const reviews = await reviewCollection.estimatedDocumentCount();
+      const products = await productCollection.estimatedDocumentCount();
+      const result = { users, reviews, products };
+      // console.log(result)
+      res.send(result);
+    });
+
     // User collection related routes
     // Get all users
     app.get("/users/:email", verifyToken, verifyAdmin, async (req, res) => {
