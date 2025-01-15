@@ -108,7 +108,15 @@ async function run() {
     });
 
     // User collection related routes
-    // Get all users
+    // Get one user by email
+    app.get("/users/single/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    });
+
+    // Get all users for admin
     app.get("/users/:email", verifyToken, verifyAdmin, async (req, res) => {
       const email = req.params.email;
       const query = { email: { $ne: email } };
