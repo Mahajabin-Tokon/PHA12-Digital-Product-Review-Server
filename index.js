@@ -330,10 +330,44 @@ async function run() {
       res.send(result);
     });
 
+    // Get coupon by id
+    app.get("/coupons/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await couponCollection.findOne(query);
+      res.send(result);
+    });
+
     // Add a coupon to db
     app.post("/coupons", verifyToken, verifyAdmin, async (req, res) => {
       const coupon = req.body;
       const result = await couponCollection.insertOne(coupon);
+      res.send(result);
+    });
+
+    // Update coupon
+    app.patch("/coupons/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      // const options = { upsert: true };
+      const couponData = req.body;
+      const updatedCoupon = {
+        $set: {
+          couponCode: couponData.couponCode,
+          expiryDate: couponData.expiry,
+          couponDescription: couponData.couponDescription,
+          discount: couponData.discount,
+        },
+      };
+      const result = await couponCollection.updateOne(filter, updatedCoupon);
+      res.send(result);
+    });
+
+    // Delete coupon
+    app.delete("/coupons/:id", verifyToken, verifyAdmin, async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await couponCollection.deleteOne(query);
       res.send(result);
     });
 
