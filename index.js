@@ -176,27 +176,41 @@ async function run() {
     );
 
     // Update user verified status
-    app.patch(
-      "/users/payment/:email",
-      verifyToken,
-      async (req, res) => {
-        const email = req.params.email;
-        const filter = { email: email };
-        const options = { upsert: true };
-        const updatedUser = {
-          $set: {
-            isVerified: true,
-          },
-        };
-        const result = await userCollection.updateOne(filter, updatedUser, options);
-        res.send(result);
-      }
-    );
+    app.patch("/users/payment/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email };
+      const options = { upsert: true };
+      const updatedUser = {
+        $set: {
+          isVerified: true,
+        },
+      };
+      const result = await userCollection.updateOne(
+        filter,
+        updatedUser,
+        options
+      );
+      res.send(result);
+    });
 
     // Get all products
     app.get("/products", async (req, res) => {
       const result = await productCollection.find().toArray();
       res.send(result);
+    });
+
+    // Search products
+    app.get("/products/search", async (req, res) => {
+      const { searchParams } = req.query;
+      const allProducts = await productCollection.find().toArray();
+      let returnArray = [];
+      allProducts.forEach((eachProduct) => {
+        // console.log(eachProduct);
+        if (eachProduct?.productTags?.includes(searchParams)) {
+          returnArray.push(eachProduct);
+        }
+      });
+      res.send(returnArray);
     });
 
     // Get products by email
