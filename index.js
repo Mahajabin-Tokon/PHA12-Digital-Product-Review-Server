@@ -44,6 +44,7 @@ async function run() {
     const userCollection = db.collection("users");
     const productCollection = db.collection("products");
     const reviewCollection = db.collection("reviews");
+    const couponCollection = db.collection("coupons");
 
     // Werify Moderator
     const verifyModerator = async (req, res, next) => {
@@ -319,6 +320,20 @@ async function run() {
     app.post("/reviews", async (req, res) => {
       const review = req.body;
       const result = await reviewCollection.insertOne(review);
+      res.send(result);
+    });
+
+    // Coupon related routes
+    // Get coupons from db
+    app.get("/coupons", async (req, res) => {
+      const result = await couponCollection.find().toArray();
+      res.send(result);
+    });
+
+    // Add a coupon to db
+    app.post("/coupons", verifyToken, verifyAdmin, async (req, res) => {
+      const coupon = req.body;
+      const result = await couponCollection.insertOne(coupon);
       res.send(result);
     });
 
