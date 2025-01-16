@@ -411,7 +411,7 @@ async function run() {
       const updatedCoupon = {
         $set: {
           couponCode: couponData.couponCode,
-          expiryDate: couponData.expiry,
+          expiryDate: couponData.expiryDate,
           couponDescription: couponData.couponDescription,
           discount: couponData.discount,
         },
